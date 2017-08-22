@@ -55,9 +55,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AppResources.en.resx</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\CacheHelper.cs" />
     <Compile Include="Helpers\CipherHelper.cs" />
+    <Compile Include="Helpers\HashHelper.cs" />
     <Compile Include="Helpers\MoneyHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
