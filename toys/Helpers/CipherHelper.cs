@@ -232,6 +232,9 @@ namespace toys.Helpers
         #endregion
 
         #region AES
+        /*
+         * reference: https://github.com/jbubriski/Encryptamajig
+         * */
         private static readonly int _saltSize = 32;
 
         /// <summary>
