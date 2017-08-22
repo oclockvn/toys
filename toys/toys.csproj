@@ -56,6 +56,7 @@
       <DependentUpon>AppResources.en.resx</DependentUpon>
     </Compile>
     <Compile Include="Extensions\NumberExtensions.cs" />
+    <Compile Include="Extensions\QueryExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\CacheHelper.cs" />
     <Compile Include="Helpers\CipherHelper.cs" />

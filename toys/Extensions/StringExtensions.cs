@@ -68,6 +68,24 @@ namespace toys.Extensions
             return slug.Truncate(length, string.Empty);
         }
 
+        public static string ToSlug(this string text, int length = 225)
+        {
+            string value = text.Normalize(NormalizationForm.FormD).Trim();
+            StringBuilder builder = new StringBuilder();
+
+            foreach (char c in text.ToCharArray())
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+
+            value = builder.ToString();
+
+            byte[] bytes = Encoding.GetEncoding("Cyrillic").GetBytes(text);
+
+            value = Regex.Replace(Regex.Replace(Encoding.ASCII.GetString(bytes), @"\s{2,}|[^\w]", " ", RegexOptions.ECMAScript).Trim(), @"\s+", "_");
+
+            return value.ToLowerInvariant().Truncate(length, string.Empty);
+        }
+
         /// <summary>
         /// Capital string like: 'lorem ipsum dolor sit amet' -> 'Lorem Ipsum Dolor Sit Amet'
         /// </summary>
@@ -106,6 +124,31 @@ namespace toys.Extensions
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Convert a string into uppercase first letter.
+        /// 
+        /// Ex: 
+        /// ALL UPPERCASE -> All uppercase
+        /// all lowercase -> All lowercase
+        /// </summary>
+        /// <param name="s">The string to be convert</param>
+        /// <returns>The formatted string</returns>
+        public static string ToFirstLetterUppercase(this string s)
+        {
+            if (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s))
+                return string.Empty;
+
+            return s.Substring(0, 1).ToUpper() + s.Substring(1).ToLower();
+        }
+
+        public static string ToFirstLetterOfWords(this string s)
+        {
+            if (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s))
+                return string.Empty;
+
+            return "";
         }
     }
 }
