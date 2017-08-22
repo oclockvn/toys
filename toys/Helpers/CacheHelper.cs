@@ -11,9 +11,9 @@ namespace toys.Helpers
         /// <typeparam name="T">return data</typeparam>
         /// <param name="key">string of key to get or set</param>
         /// <param name="factory">callback used to get data if not exist</param>
-        /// <param name="expire">expiration time, in minute</param>
+        /// <param name="expireMinutes">expiration time, in minute</param>
         /// <returns></returns>
-        T GetOrSet<T>(string key, Func<T> factory, int expire);
+        T GetOrSet<T>(string key, Func<T> factory, int expireMinutes);
 
         /// <summary>
         /// remote cache
@@ -26,10 +26,10 @@ namespace toys.Helpers
     {
         private static MemoryCache cache = MemoryCache.Default;
 
-        public T GetOrSet<T>(string key, Func<T> factory, int expire)
+        public T GetOrSet<T>(string key, Func<T> factory, int expireMinutes)
         {
             var newValue = new Lazy<T>(factory);
-            var oldValue = cache.AddOrGetExisting(key, newValue, policy: new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(expire) }) as Lazy<T>;
+            var oldValue = cache.AddOrGetExisting(key, newValue, policy: new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(expireMinutes) }) as Lazy<T>;
 
             try
             {

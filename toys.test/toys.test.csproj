@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CipherHelperTest.cs" />
     <Compile Include="DateTimeExtensionTest.cs" />
     <Compile Include="EnumExtensionsTests.cs" />
     <Compile Include="ExceptionExtenstionTests.cs" />
