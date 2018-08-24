@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>oclockvn.toys</id>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <title>dotnet extensions and helpers</title>
     <authors>oclockvn</authors>
     <owners>$authoroclockvn</owners>    
     <projectUrl>https://github.com/oclockvn/toys</projectUrl>    
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>dotnet extensions and helpers</description>
-    <releaseNotes>Some common helpers.</releaseNotes>
+    <releaseNotes>updated document header.</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>.net extensionmethods helper</tags>
   </metadata>
