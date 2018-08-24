@@ -8,14 +8,31 @@ namespace toys.Extensions
         /// Get error message of an exception
         /// </summary>
         /// <param name="ex">The exception</param>
-        /// <param name="tag">The display tag</param>
-        /// <param name="loop">The stop loop</param>
-        /// <returns>a string of message</returns>
-        public static string ToErrorMessage(this Exception ex, string tag = "Exception", int loop = 1)
+        /// <returns>
+        /// a string of message
+        /// </returns>
+        public static string ToErrorMessage(this Exception ex)
         {
-            return (ex == null || loop >= 5)
+            return (ex == null)
                 ? string.Empty
-                : $"[{tag}] => {ex.Message} \r\n {ex.InnerException?.ToErrorMessage($"Inner {loop}", loop++)}";
+                : ex.Message + Environment.NewLine + ex.InnerException?.ToErrorMessage() + Environment.NewLine + ex.StackTrace;
+        }
+
+        /// <summary>
+        /// To the exception message trim stacktrace.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <returns></returns>
+        public static string ToExceptionMessageTrimStacktrace(this Exception ex)
+        {
+            var msg = ex.ToErrorMessage();
+            if (string.IsNullOrWhiteSpace(msg))
+                return string.Empty;
+
+            var lastLineIdx = msg.LastIndexOf(":line", StringComparison.InvariantCultureIgnoreCase);
+            var trace = lastLineIdx <= 0 ? string.Empty : msg.Substring(0, Math.Min(lastLineIdx + 10, msg.Length));
+
+            return trace.Trim();
         }
     }
 }

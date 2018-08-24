@@ -16,8 +16,8 @@ namespace toys.Extensions
         {
             var attr = enumValue.GetType()
                             .GetMember(enumValue.ToString())
-                            .First()
-                            .GetCustomAttribute<DisplayAttribute>();
+                            .FirstOrDefault()
+                            ?.GetCustomAttribute<DisplayAttribute>();
 
             return attr != null ? attr.GetName() : enumValue.ToString();
         }

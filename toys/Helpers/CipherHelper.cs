@@ -6,101 +6,8 @@ using System.Linq;
 
 namespace toys.Helpers
 {
-    internal static class Global
-    {
-        // set permutations
-        public const string strPermutation = "qwertyuiopasdfgh";
-        public const int bytePermutation1 = 0x19;
-        public const int bytePermutation2 = 0x59;
-        public const int bytePermutation3 = 0x17;
-        public const int bytePermutation4 = 0x41;
-    }
-
     public static class CipherHelper
     {
-        #region without password
-        /*
-        /// <summary>
-        /// Encrypt a string without password
-        /// </summary>
-        /// <param name="plainText">The string to be encrypted</param>
-        /// <returns>Encrypted string</returns>
-        public static string Encrypt(string plainText)
-        {
-            // https://msdn.microsoft.com/en-us/library/ds4kkd55(v=vs.110).aspx
-            return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(plainText)));
-        }
-        
-        /// <summary>
-        /// Decrypt an encrypted string
-        /// </summary>
-        /// <param name="plainText">The string to be decrypted</param>
-        /// <returns>The plain text string</returns>
-        public static string Decrypt(string plainText)
-        {
-            // https://msdn.microsoft.com/en-us/library/system.convert.frombase64string(v=vs.110).aspx
-            try
-            {
-                return Encoding.UTF8.GetString(Decrypt(Convert.FromBase64String(plainText)));
-            }
-            catch (FormatException)
-            {
-                return string.Empty;
-            }
-            catch (CryptographicException)
-            {
-                return string.Empty;
-            }
-        }
-
-        // encrypt
-        public static byte[] Encrypt(byte[] strData)
-        {
-            PasswordDeriveBytes passbytes =
-            new PasswordDeriveBytes(Global.strPermutation,
-            new byte[] { Global.bytePermutation1,
-                         Global.bytePermutation2,
-                         Global.bytePermutation3,
-                         Global.bytePermutation4
-            });
-
-            MemoryStream memstream = new MemoryStream();
-            Aes aes = new AesManaged();
-            aes.Key = passbytes.GetBytes(aes.KeySize / 8);
-            aes.IV = passbytes.GetBytes(aes.BlockSize / 8);
-
-            CryptoStream cryptostream = new CryptoStream(memstream,
-            aes.CreateEncryptor(), CryptoStreamMode.Write);
-            cryptostream.Write(strData, 0, strData.Length);
-            cryptostream.Close();
-            return memstream.ToArray();
-        }
-
-        // decrypt
-        public static byte[] Decrypt(byte[] strData)
-        {
-            PasswordDeriveBytes passbytes =
-            new PasswordDeriveBytes(Global.strPermutation,
-            new byte[] { Global.bytePermutation1,
-                         Global.bytePermutation2,
-                         Global.bytePermutation3,
-                         Global.bytePermutation4
-            });
-
-            MemoryStream memstream = new MemoryStream();
-            Aes aes = new AesManaged();
-            aes.Key = passbytes.GetBytes(aes.KeySize / 8);
-            aes.IV = passbytes.GetBytes(aes.BlockSize / 8);
-
-            CryptoStream cryptostream = new CryptoStream(memstream,
-            aes.CreateDecryptor(), CryptoStreamMode.Write);
-            cryptostream.Write(strData, 0, strData.Length);
-            cryptostream.Close();
-            return memstream.ToArray();
-        }
-        */
-        #endregion
-
         #region Rijndael
         /// <summary>
         /// Encrypt a string with password using Rijndael.
@@ -153,38 +60,40 @@ namespace toys.Helpers
 
                 return Encoding.UTF8.GetString(bytesDecrypted);
             }
-            catch (FormatException)
-            {
-                return string.Empty;
-            }
-            catch (CryptographicException)
-            {
-                return string.Empty;
-            }
+            catch (FormatException) { }
+            catch (CryptographicException) { }
+
+            return string.Empty;
         }
 
+        /// <summary>
+        /// Encrypts the specified bytes to be encrypted.
+        /// </summary>
+        /// <param name="bytesToBeEncrypted">The bytes to be encrypted.</param>
+        /// <param name="passwordBytes">The password bytes.</param>
+        /// <returns></returns>
         private static byte[] Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes)
         {
-            byte[] encryptedBytes = null;
+            byte[] encryptedBytes;
 
             // Set your salt here, change it to meet your flavor:
             // The salt bytes must be at least 8 bytes.
             var saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var aes = new RijndaelManaged())
                 {
                     var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
 
-                    AES.KeySize = 256;
-                    AES.BlockSize = 128;
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+                    aes.KeySize = 256;
+                    aes.BlockSize = 128;
+                    aes.Key = key.GetBytes(aes.KeySize / 8);
+                    aes.IV = key.GetBytes(aes.BlockSize / 8);
 
-                    AES.Mode = CipherMode.CBC;
+                    aes.Mode = CipherMode.CBC;
 
-                    using (var cs = new CryptoStream(ms, AES.CreateEncryptor(), CryptoStreamMode.Write))
+                    using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
                         cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
                         cs.Close();
@@ -199,25 +108,25 @@ namespace toys.Helpers
 
         private static byte[] Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes)
         {
-            byte[] decryptedBytes = null;
+            byte[] decryptedBytes;
 
             // Set your salt here, change it to meet your flavor:
             // The salt bytes must be at least 8 bytes.
             var saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var aes = new RijndaelManaged())
                 {
                     var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
 
-                    AES.KeySize = 256;
-                    AES.BlockSize = 128;
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
-                    AES.Mode = CipherMode.CBC;
+                    aes.KeySize = 256;
+                    aes.BlockSize = 128;
+                    aes.Key = key.GetBytes(aes.KeySize / 8);
+                    aes.IV = key.GetBytes(aes.BlockSize / 8);
+                    aes.Mode = CipherMode.CBC;
 
-                    using (var cs = new CryptoStream(ms, AES.CreateDecryptor(), CryptoStreamMode.Write))
+                    using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
                     {
                         cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
                         cs.Close();

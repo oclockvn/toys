@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -53,7 +52,7 @@ namespace toys.Extensions
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
 
-            string slug = input.RemoveMark().ToLower();
+            var slug = input.RemoveMark().ToLower();
 
             // remove invalid chars
             slug = Regex.Replace(slug, @"[^a-z0-9\s-]", string.Empty);
@@ -68,24 +67,6 @@ namespace toys.Extensions
             return slug.Truncate(length, string.Empty);
         }
 
-        public static string ToSlug(this string text, int length = 225)
-        {
-            string value = text.Normalize(NormalizationForm.FormD).Trim();
-            StringBuilder builder = new StringBuilder();
-
-            foreach (char c in text.ToCharArray())
-                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                    builder.Append(c);
-
-            value = builder.ToString();
-
-            byte[] bytes = Encoding.GetEncoding("Cyrillic").GetBytes(text);
-
-            value = Regex.Replace(Regex.Replace(Encoding.ASCII.GetString(bytes), @"\s{2,}|[^\w]", " ", RegexOptions.ECMAScript).Trim(), @"\s+", "_");
-
-            return value.ToLowerInvariant().Truncate(length, string.Empty);
-        }
-
         /// <summary>
         /// Capital string like: 'lorem ipsum dolor sit amet' -> 'Lorem Ipsum Dolor Sit Amet'
         /// </summary>
@@ -96,8 +77,8 @@ namespace toys.Extensions
             if (string.IsNullOrEmpty(input) || string.IsNullOrWhiteSpace(input))
                 return string.Empty;
 
-            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
-            TextInfo textInfo = cultureInfo.TextInfo;
+            var cultureInfo = Thread.CurrentThread.CurrentCulture;
+            var textInfo = cultureInfo.TextInfo;
 
             return textInfo.ToTitleCase(input.Trim());
         }
@@ -108,15 +89,15 @@ namespace toys.Extensions
         /// <param name="input">The input string</param>
         /// <param name="splitPattern">The pattern used to split input string</param>
         /// <returns>The collection contains splited parts</returns>
-        public static List<string> ToCollection(this string input, string splitPattern = "\r\n")
+        public static List<string> ToStringCollection(this string input, string splitPattern = "\r\n")
         {
-            List<string> results = new List<string>();
+            var results = new List<string>();
 
             if (string.IsNullOrEmpty(input) || string.IsNullOrWhiteSpace(input))
                 return results;
 
             var splits = Regex.Split(input.Trim(), splitPattern);
-            if (splits != null && splits.Length > 0)
+            if (splits.Length > 0)
             {
                 results = (from i in splits
                            where !string.IsNullOrEmpty(i) && !string.IsNullOrWhiteSpace(i)
@@ -140,15 +121,36 @@ namespace toys.Extensions
             if (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s))
                 return string.Empty;
 
+            if (s.Length == 1)
+                return s.ToUpper();
+
             return s.Substring(0, 1).ToUpper() + s.Substring(1).ToLower();
         }
 
-        public static string ToFirstLetterOfWords(this string s)
+        /// <summary>
+        /// Add or remove "fill" character to match exact "length" of given input
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="length">The length.</param>
+        /// <param name="fill">The fill character.</param>
+        /// <returns>the string with exactly length</returns>
+        public static string FillExact(this string input, int length, char fill = ' ')
         {
-            if (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s))
-                return string.Empty;
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Join(string.Empty, Enumerable.Range(0, length).Select(x => fill));
 
-            return "";
+            var len = input.Length;
+
+            if (len == length)
+                return input;
+
+            if (len > length)
+                return input.Substring(0, length);
+
+            var miss = length - len;
+            var add = string.Join(string.Empty, Enumerable.Range(0, miss).Select(x => fill));
+
+            return input + add;
         }
     }
 }

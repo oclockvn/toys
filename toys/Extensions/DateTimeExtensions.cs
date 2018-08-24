@@ -15,8 +15,7 @@ namespace toys.Extensions
         /// <returns>return DateTime if parse success, otherwise return null</returns>
         public static DateTime? ToDateTime(this string dateString, string format = "dd/MM/yyyy", string culture = "vi-vn")
         {
-            DateTime dt;
-            var succeed = DateTime.TryParseExact(dateString, format, CultureInfo.CreateSpecificCulture(culture), DateTimeStyles.None, out dt);
+            var succeed = DateTime.TryParseExact(dateString, format, CultureInfo.CreateSpecificCulture(culture), DateTimeStyles.None, out var dt);
 
             if (succeed)
                 return dt;
@@ -40,7 +39,7 @@ namespace toys.Extensions
             if (dateTime > now)
                 return string.Empty;
 
-            string result = string.Empty;
+            string result;
             var ts = now.Subtract(dateTime);
 
             if (ts <= TimeSpan.FromSeconds(60))
@@ -70,7 +69,7 @@ namespace toys.Extensions
             else if (ts <= TimeSpan.FromDays(365))
             {
                 const int dayOfMonth = 30;
-                result = (ts.Days > dayOfMonth) && (now.Month - dateTime.Month > 1)
+                result = ts.Days > dayOfMonth && now.Month - dateTime.Month > 1
                     ? string.Format(GetResource("TimeAgo_Months", culture), ts.Days / dayOfMonth)
                     : GetResource("TimeAgo_Month", culture);
             }
@@ -84,39 +83,49 @@ namespace toys.Extensions
             return result;
         }
 
+        /// <summary>
+        /// Intersectses the specified end date.
+        /// </summary>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="intersectingStartDate">The intersecting start date.</param>
+        /// <param name="intersectingEndDate">The intersecting end date.</param>
+        /// <returns></returns>
         public static bool Intersects(this DateTime startDate, DateTime endDate, DateTime intersectingStartDate, DateTime intersectingEndDate)
         {
-            return (intersectingEndDate >= startDate && intersectingStartDate <= endDate);
+            return intersectingEndDate >= startDate && intersectingStartDate <= endDate;
         }
 
         /// <summary>
-        /// DateDiff in SQL style. 
-        /// Datepart implemented: 
-        ///     "year" (abbr. "yy", "yyyy"), 
-        ///     "quarter" (abbr. "qq", "q"), 
-        ///     "month" (abbr. "mm", "m"), 
-        ///     "day" (abbr. "dd", "d"), 
-        ///     "week" (abbr. "wk", "ww"), 
-        ///     "hour" (abbr. "hh"), 
-        ///     "minute" (abbr. "mi", "n"), 
-        ///     "second" (abbr. "ss", "s"), 
-        ///     "millisecond" (abbr. "ms").
+        /// DateDiff in SQL style.
+        /// Datepart implemented:
+        /// "year" (abbr. "yy", "yyyy"),
+        /// "quarter" (abbr. "qq", "q"),
+        /// "month" (abbr. "mm", "m"),
+        /// "day" (abbr. "dd", "d"),
+        /// "week" (abbr. "wk", "ww"),
+        /// "hour" (abbr. "hh"),
+        /// "minute" (abbr. "mi", "n"),
+        /// "second" (abbr. "ss", "s"),
+        /// "millisecond" (abbr. "ms").
         /// </summary>
-        /// <param name="DatePart"></param>
-        /// <param name="EndDate"></param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="datePart">The date part.</param>
+        /// <param name="endDate">The end date.</param>
         /// <returns></returns>
-        public static Int64 DateDiff(this DateTime StartDate, String DatePart, DateTime EndDate)
+        /// <exception cref="Exception"></exception>
+        public static long DateDiff(this DateTime startDate, string datePart, DateTime endDate)
         {
-            Int64 DateDiffVal = 0;
-            Calendar cal = System.Threading.Thread.CurrentThread.CurrentCulture.Calendar;
-            TimeSpan ts = new TimeSpan(EndDate.Ticks - StartDate.Ticks);
-            switch (DatePart.ToLower().Trim())
+            long dateDiffVal;
+            var cal = System.Threading.Thread.CurrentThread.CurrentCulture.Calendar;
+            var ts = new TimeSpan(endDate.Ticks - startDate.Ticks);
+            switch (datePart.ToLower().Trim())
             {
                 #region year
                 case "year":
                 case "yy":
                 case "yyyy":
-                    DateDiffVal = (Int64)(cal.GetYear(EndDate) - cal.GetYear(StartDate));
+                    dateDiffVal = cal.GetYear(endDate) - cal.GetYear(startDate);
                     break;
                 #endregion
 
@@ -124,10 +133,9 @@ namespace toys.Extensions
                 case "quarter":
                 case "qq":
                 case "q":
-                    DateDiffVal = (Int64)((((cal.GetYear(EndDate)
-                                        - cal.GetYear(StartDate)) * 4)
-                                        + ((cal.GetMonth(EndDate) - 1) / 3))
-                                        - ((cal.GetMonth(StartDate) - 1) / 3));
+                    dateDiffVal = (cal.GetYear(endDate) - cal.GetYear(startDate)) * 4
+                                  + (cal.GetMonth(endDate) - 1) / 3
+                                  - (cal.GetMonth(startDate) - 1) / 3;
                     break;
                 #endregion
 
@@ -135,10 +143,9 @@ namespace toys.Extensions
                 case "month":
                 case "mm":
                 case "m":
-                    DateDiffVal = (Int64)(((cal.GetYear(EndDate)
-                                        - cal.GetYear(StartDate)) * 12
-                                        + cal.GetMonth(EndDate))
-                                        - cal.GetMonth(StartDate));
+                    dateDiffVal = (cal.GetYear(endDate) - cal.GetYear(startDate)) * 12
+                                  + cal.GetMonth(endDate)
+                                  - cal.GetMonth(startDate);
                     break;
                 #endregion
 
@@ -146,7 +153,7 @@ namespace toys.Extensions
                 case "day":
                 case "d":
                 case "dd":
-                    DateDiffVal = (Int64)ts.TotalDays;
+                    dateDiffVal = (long)ts.TotalDays;
                     break;
                 #endregion
 
@@ -154,14 +161,14 @@ namespace toys.Extensions
                 case "week":
                 case "wk":
                 case "ww":
-                    DateDiffVal = (Int64)(ts.TotalDays / 7);
+                    dateDiffVal = (long)(ts.TotalDays / 7);
                     break;
                 #endregion
 
                 #region hour
                 case "hour":
                 case "hh":
-                    DateDiffVal = (Int64)ts.TotalHours;
+                    dateDiffVal = (long)ts.TotalHours;
                     break;
                 #endregion
 
@@ -169,7 +176,7 @@ namespace toys.Extensions
                 case "minute":
                 case "mi":
                 case "n":
-                    DateDiffVal = (Int64)ts.TotalMinutes;
+                    dateDiffVal = (long)ts.TotalMinutes;
                     break;
                 #endregion
 
@@ -177,21 +184,21 @@ namespace toys.Extensions
                 case "second":
                 case "ss":
                 case "s":
-                    DateDiffVal = (Int64)ts.TotalSeconds;
+                    dateDiffVal = (long)ts.TotalSeconds;
                     break;
                 #endregion
 
                 #region millisecond
                 case "millisecond":
                 case "ms":
-                    DateDiffVal = (Int64)ts.TotalMilliseconds;
+                    dateDiffVal = (long)ts.TotalMilliseconds;
                     break;
                 #endregion
 
                 default:
-                    throw new Exception(String.Format("DatePart \"{0}\" is unknown", DatePart));
+                    throw new Exception($"DatePart \"{datePart}\" is unknown");
             }
-            return DateDiffVal;
+            return dateDiffVal;
         }
     }
 }
